@@ -46,7 +46,7 @@ kadai01.pyの使い方は
 *% python3 kadai01.py words.txt test_for_kadai01.txt*
 
 のように,
-<kadai01.py> <辞書ファイル>　<調べたい文字列のファイル> 
+<kadai01.py> <辞書ファイル> <調べたい文字列のファイル> 
 
 の順にコマンドラインに書くことで, 出力として
 
