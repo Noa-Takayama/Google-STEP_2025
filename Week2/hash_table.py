@@ -97,11 +97,22 @@ class HashTable:
     #               otherwise.
     def delete(self, key):
         assert type(key) == str
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
-
+        self.check_size()  # ここが自分で書いたコード
+        bucket_index = calculate_hash(key) % self.bucket_size
+        item = self.buckets[bucket_index]
+        prev_item = None
+        while item:
+            if item.key == key:
+                if prev_item:
+                    prev_item.next = item.next
+                else:
+                    self.buckets[bucket_index] = item.next
+                self.item_count -= 1
+                return True
+            prev_item = item
+            item = item.next
+        return False
+    
     # Return the total number of items in the hash table.
     def size(self):
         return self.item_count
