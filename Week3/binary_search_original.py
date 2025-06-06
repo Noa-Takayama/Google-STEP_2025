@@ -2,7 +2,6 @@ def quick_sort(array, left, right):
     pivot = array[int((left + right) / 2)]
     i = left
     j = right
-    print(i, j, pivot)
     while True:
         while pivot > array[i]:
             i += 1
