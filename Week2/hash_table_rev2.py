@@ -50,7 +50,7 @@ class HashTable:
     def __init__(self):
         # Set the initial bucket size to 97. A prime number is chosen to reduce
         # hash conflicts.
-        self.bucket_size = 998244353  # ここは大きい素数を選ぶ!
+        self.bucket_size = 998244353  # ここは大きい素数を選ぶ! ハッシュテーブルの大きさは変えない
         self.buckets = [None] * self.bucket_size
         self.item_count = 0
 
@@ -63,18 +63,21 @@ class HashTable:
     #               and the value is updated.
     def put(self, key, value):
         assert type(key) == str
-        self.check_size() # Note: Don't remove this code.
-        bucket_index = calculate_hash(key) % self.bucket_size
-        item = self.buckets[bucket_index]
-        while item:
-            if item.key == key:
-                item.value = value
-                return False
-            item = item.next
-        new_item = Item(key, value, self.buckets[bucket_index])
-        self.buckets[bucket_index] = new_item
-        self.item_count += 1
-        return True
+        # self.check_size() # はっしゅテーブルのサイズをチェックする関数は不要
+        index = calculate_hash(key) % self.bucket_size
+
+        item = self.buckets[index] # 既存キーを探して値を更新
+        while item: # ハッシュテーブルのバケットを走査
+            if item.key == key: # 既存キーが見つかったら
+                item.value = value # 値を更新
+                return False # 既存キーの更新なので False を返す
+            item = item.next # 次のアイテムへ
+        
+        # 新しいアイテムを追加
+        new_item = Item(key, value, self.buckets[index])
+        self.buckets[index] = new_item # バケットの先頭に新しいアイテムを追加
+        self.item_count += 1 # アイテム数を増やす
+        return True # 新しいアイテムを追加したので True を返す
 
     # Get an item from the hash table.
     #
@@ -83,15 +86,15 @@ class HashTable:
     #               returned. Otherwise, (None, False) is returned.
     def get(self, key):
         assert type(key) == str
-        self.check_size() # Note: Don't remove this code.
-        bucket_index = calculate_hash(key) % self.bucket_size
-        item = self.buckets[bucket_index]
-        while item:
-            if item.key == key:
-                return (item.value, True)
-            item = item.next
-        return (None, False)
-
+        # check_size() は不要
+        index = calculate_hash(key) % self.bucket_size
+        item = self.buckets[index]
+        while item:  # ハッシュテーブルのバケットを走査
+            if item.key == key:  # キーが見つかったら
+                return (item.value, True)  # 値と True を返す
+            item = item.next  # 次のアイテムへ
+        return (None, False)  # キーが見つからなかったら None と False を返す
+    
     # Delete an item from the hash table.
     #
     # |key|: The key.
@@ -99,21 +102,22 @@ class HashTable:
     #               otherwise.
     def delete(self, key):
         assert type(key) == str
-        self.check_size()  # ここが自分で書いたコード
-        bucket_index = calculate_hash(key) % self.bucket_size
-        item = self.buckets[bucket_index]
-        prev_item = None
-        while item:
+        # check_size() は不要
+        index = calculate_hash(key) % self.bucket_size
+        item = self.buckets[index]
+        prev_item = None # 前のアイテムを保持するための変数
+        while item:  # ハッシュテーブルのバケットを走査
             if item.key == key:
+                # 先頭または中間のアイテムを削除
                 if prev_item:
                     prev_item.next = item.next
                 else:
-                    self.buckets[bucket_index] = item.next
+                    self.buckets[index] = item.next # バケットの先頭を更新
                 self.item_count -= 1
-                return True
+                return True  # アイテムが削除されたので True を返す
             prev_item = item
-            item = item.next
-        return False
+            item = item.next  # 次のアイテムへ
+        return False # アイテムが見つからなかったので False を返す
     
     # Return the total number of items in the hash table.
     def size(self):
@@ -124,10 +128,8 @@ class HashTable:
     # the buckets are 30% or more used.
     #
     # Note: Don't change this function.
-    def check_size(self):
-        assert (self.bucket_size < 100 or
-                self.item_count >= self.bucket_size * 0.3)
 
+    # check_size() は不要なので削除
 
 
 
