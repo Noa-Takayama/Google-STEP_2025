@@ -18,9 +18,11 @@ def calculate_hash(key):
     # Note: This is not a good hash function. Do you see why?
     hash = 0
     for i in key:
-        hash += ord(i)
+        hash = (hash * 257 + ord(i)) % 998244353 
+    # ハッシュテーブルの衝突を減らすために, 十分大きい素数を用意
+    # 基数 base を 257 にして, 素数 998244353 で割ることで
+    # ハッシュ値を計算する. これにより, より均等にハッシュ値が分布するらしい...
     return hash
-
 
 # An item object that represents one key - value pair in the hash table.
 class Item:
@@ -48,7 +50,7 @@ class HashTable:
     def __init__(self):
         # Set the initial bucket size to 97. A prime number is chosen to reduce
         # hash conflicts.
-        self.bucket_size = 97
+        self.bucket_size = 998244353  # ここは大きい素数を選ぶ!
         self.buckets = [None] * self.bucket_size
         self.item_count = 0
 
@@ -125,6 +127,8 @@ class HashTable:
     def check_size(self):
         assert (self.bucket_size < 100 or
                 self.item_count >= self.bucket_size * 0.3)
+
+
 
 
 # Test the functional behavior of the hash table.
