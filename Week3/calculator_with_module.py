@@ -1,7 +1,7 @@
 # モジュール化した電卓プログラムを作ってみた!
 # モジュール化しているとしていないとで, どのくらいわかりやすいかな？？
 
-def readNumber(line, index):
+def readNumber(line, index): # 数字を読み取る関数
     number = 0
     while index < len(line) and line[index].isdigit():
         number = number * 10 + int(line[index])
@@ -12,7 +12,7 @@ def readNumber(line, index):
     token = {'type': 'NUMBER', 'number': number}
     return token, index
 
-def readDecimal(line, index):
+def readDecimal(line, index): # 小数部分を読み取る関数
     number = 0
     decimal = 0.1
     while index < len(line) and line[index].isdigit():
@@ -29,7 +29,7 @@ def readMinus(line, index):
     token = {'type': 'MINUS'}
     return token, index + 1
 
-def tokenize(line):
+def tokenize(line): # 字句に分解する関数
     tokens = []
     index = 0
     while index < len(line):
@@ -45,7 +45,7 @@ def tokenize(line):
         tokens.append(token)
     return tokens
 
-def evaluate(tokens):
+def evaluate(tokens): # 字句の並びを計算
     answer = 0
     tokens.insert(0, {'type': 'PLUS'})  # Insert a dummy '+' token
     index = 1
@@ -64,4 +64,4 @@ while True:
     line = input()
     tokens = tokenize(line)
     answer = evaluate(tokens)
-    print("answer = %d\n" % answer)
+    print("answer = %d\n" % answer) # # 出力は整数にしておく
