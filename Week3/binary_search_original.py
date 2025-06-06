@@ -26,14 +26,14 @@ def sort(array):
 def binary_search(array, target):
     left = 0
     right = len(array) - 1
-    while left <= right - 1:
-        middle = int((left + right) / 2)
+    while left <= right:
+        middle = int((left + right) / 2) # ここで int が必要なのは, # Python では整数除算が float を返すため
         if array[middle] == target:
             return True
-        if target < array[middle]:
-            right = middle
+        elif target < array[middle]:
+            right = middle -1
         else:
-            left = middle
+            left = middle + 1
     return False
 
 
