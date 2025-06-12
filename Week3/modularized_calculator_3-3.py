@@ -77,7 +77,7 @@ def tokenize(line): # 入力された数式全体をトークンに分解する�
 # そして, 括弧がない場合は, 掛け算と割り算が先行して計算されるように調整する.
 
 def evaluate(tokens):
-    def precedence(token_type):
+    def priority_for_operator(token_type):
         if token_type in ['MULTIPLY', 'DIVIDE']: # 掛け算と割り算は優先度が高い
             return 2
         elif token_type in ['PLUS', 'MINUS']: # 足し算と引き算は優先度が低い
@@ -112,7 +112,7 @@ def evaluate(tokens):
                     values.append(left_operand / right_operand)
             operators.pop() # 対応する OPEN_BRACKET をポップ
         elif token['type'] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
-            while operators and precedence(operators[-1]) >= precedence(token['type']):
+            while operators and priority_for_operator(operators[-1]) >= priority_for_operator(token['type']):
                 operator = operators.pop() # 演算子スタックから演算子をポップ
                 right_operand = values.pop() # 数字スタックから右辺の値をポップ
                 left_operand = values.pop() # 数字スタックから左辺の値をポップ
