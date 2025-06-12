@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-def read_number(line, index):
+def read_number(line, index): # 入力された数式 line の中のある位置 index から数字を読み取る関数
     number = 0
     while index < len(line) and line[index].isdigit():
         number = number * 10 + int(line[index])
@@ -16,31 +16,36 @@ def read_number(line, index):
     return token, index
 
 
-def read_plus(line, index):
+def read_plus(line, index): # 入力された数式 line の中のある位置 index から '+' を読み取る関数
     token = {'type': 'PLUS'}
     return token, index + 1
 
 
-def read_minus(line, index):
+def read_minus(line, index): # 入力された数式 line の中のある位置 index から '-' を読み取る関数
     token = {'type': 'MINUS'}
     return token, index + 1
 
 
-def tokenize(line):
+def tokenize(line): # 入力された数式全体をトークンに分解する中心的な役割を果たしている
     tokens = []
     index = 0
-    while index < len(line):
-        if line[index].isdigit():
-            (token, index) = read_number(line, index)
-        elif line[index] == '+':
-            (token, index) = read_plus(line, index)
-        elif line[index] == '-':
-            (token, index) = read_minus(line, index)
-        else:
-            print('Invalid character found: ' + line[index])
+    while index < len(line): # 数式の最初から最後まで
+        if line[index].isdigit(): # インデックス部分が数字だったら
+            (token, index) = read_number(line, index) # 数字を読み取る read_number 関数を呼び出す
+        elif line[index] == '+': # インデックス部分が '+' だったら
+            (token, index) = read_plus(line, index) # '+' を読み取る read_plus 関数を呼び出す
+        elif line[index] == '-': # インデックス部分が '-' だったら
+            (token, index) = read_minus(line, index) # '-' を読み取る read_minus 関数を呼び出す
+        else: # それ以外の数字が来たら
+            print('Invalid character found: ' + line[index]) # エラーメッセージを出力して終了
             exit(1)
         tokens.append(token)
-    return tokens
+    return tokens # 最終的に, 作成したトークンを順番に並べたリストを返す. 
+    
+    
+"""例えば, "1+2-3.5" という数式を入力した場合,
+[{'type': 'NUMBER', 'number': 1}, {'type': 'PLUS'}, {'type': 'NUMBER', 'number': 2}, {'type': 'MINUS'}, {'type': 'NUMBER', 'number': 3.5}
+のようなリストが返されることになる"""
 
 
 def evaluate(tokens):
