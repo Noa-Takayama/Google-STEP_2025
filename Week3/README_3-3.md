@@ -2,8 +2,10 @@
 
 作成したコード名は, [`modularized_calculator_3-3.py`](modularized_calculator_3-3.py)です.
 
-まず宿題1の要件は, 簡単電卓器に対し, 掛け算と割り算の機能を実装することです.
+宿題3の要件は, 括弧が最も演算として最優先されるようにする, ということです.
 
-そのため, `read_multiply(line, index)` と `read_divide(line, index)` を追加実装しました.
+そのため, 新たに `read_multiply(line, index)` と `read_divide(line, index)` 関数を実装することで,
+入力された数式 line の中のある位置 index から '(' と ')'　を読み取れるようにしました.
 
-さらに, 掛け算・割り算が足し算や引き算よりも先行するようにするため, `evaluate(tokens)` の部分に新しく `new_tokens` という新しいリストを作成しました.
+課題1,2と比較したときに, 最も変更点が多いのは関数 `evaluate(tokens)` です.
+
