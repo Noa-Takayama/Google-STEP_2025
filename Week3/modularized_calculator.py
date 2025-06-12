@@ -48,16 +48,17 @@ def tokenize(line): # 入力された数式全体をトークンに分解する�
 のようなリストが返されることになる"""
 
 
-def evaluate(tokens):
+def evaluate(tokens): # ここが tokenize 関数で作られたトークンから, 実際の計算を行う関数
     answer = 0
-    tokens.insert(0, {'type': 'PLUS'}) # Insert a dummy '+' token
-    index = 1
-    while index < len(tokens):
-        if tokens[index]['type'] == 'NUMBER':
-            if tokens[index - 1]['type'] == 'PLUS':
-                answer += tokens[index]['number']
-            elif tokens[index - 1]['type'] == 'MINUS':
-                answer -= tokens[index]['number']
+    tokens.insert(0, {'type': 'PLUS'}) # 最初の数字が正の数であることを明確にする. これをしないと, 最初の数字が負の数だった場合に計算がうまくいかない
+    index = 1 # トークンの最初は '+' なので, 1 から始める
+    # トークンのリストを順番に見ていく
+    while index < len(tokens): # トークンのリストの最後まで
+        if tokens[index]['type'] == 'NUMBER': # トークンの種類が 'NUMBER' だったら
+            if tokens[index - 1]['type'] == 'PLUS': # 直前のトークンが '+' だったら
+                answer += tokens[index]['number'] # 現在のトークンの数字を answer に足す
+            elif tokens[index - 1]['type'] == 'MINUS': # 直前のトークンが '-' だったら
+                answer -= tokens[index]['number'] # 現在のトークンの数字を answer から引く
             else:
                 print('Invalid syntax')
                 exit(1)
@@ -65,13 +66,15 @@ def evaluate(tokens):
     return answer
 
 
-def test(line):
+def test(line): # テスト用の関数. 入力された数式 line をトークンに分解して計算し, 期待する結果と比較する
     tokens = tokenize(line)
-    actual_answer = evaluate(tokens)
+    # tokenize と evaluate 関数を使って計算した結果 actual_answer と, Python の eval 関数を使って計算した結果 expected_answer を比較する
+    actual_answer = evaluate(tokens) 
     expected_answer = eval(line)
-    if abs(actual_answer - expected_answer) < 1e-8:
+    if abs(actual_answer - expected_answer) < 1e-8: # 計算結果が期待値とほぼ等しいかどうかを確認する
+        # ほぼ等しい場合は PASS と表示
         print("PASS! (%s = %f)" % (line, expected_answer))
-    else:
+    else: # ほぼ等しくない場合は FAIL と表示
         print("FAIL! (%s should be %f but was %f)" % (line, expected_answer, actual_answer))
 
 
