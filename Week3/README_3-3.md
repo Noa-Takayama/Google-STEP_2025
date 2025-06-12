@@ -30,3 +30,11 @@ elif token['type'] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
 
 while ループが終わると, operators.`append(token['type'])` によって `operators` スタックにプッシュされます.
 
+## 最後の `while operators` ループ
+```python
+while operators: # 演算子スタックに残っている演算子がある限り
+    operator = operators.pop()
+    right_operand = values.pop()
+    left_operand = values.pop()
+    # ...演算子に応じて計算を行う...
+
