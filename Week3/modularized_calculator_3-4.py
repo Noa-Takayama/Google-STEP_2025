@@ -220,6 +220,7 @@ def run_test():
     # 複合テスト
     test("abs(-3.5) + int(2.9) - round(4.5)")
     test("abs(0) + int(4.0) - round(-0.5)")
+    test("abs(6.0-11.2) + int(4.0 * 3.3) - round(-0.5)") # めちゃキモ! 絶対値や小数の切り捨ての前に四則演算が行われるようにする!!
     print("==== Test finished! ====\n")
 
 run_test()
