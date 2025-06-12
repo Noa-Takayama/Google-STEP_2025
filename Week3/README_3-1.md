@@ -1,5 +1,5 @@
 ## 宿題1: 掛け算と割り算の関数実装!!
 
-作成したコード名は, **`modularized_calculator.py`** です.
+作成したコード名は, [`modularized_calculator.py`](modularized_calculator.py)です.
 
 まず宿題1の要件は, 簡単電卓器に対し, 掛け算と割り算の機能を実装することです.
