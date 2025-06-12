@@ -9,3 +9,14 @@
 
 課題1,2と比較したときに, 最も変更点が多いのは関数 `evaluate(tokens)` です.
 
+まず新たに, `priority_for_operator(token_type)` 関数を組み込みました.
+
+これは, 演算子の優先順位を決定するための関数です.
+
+`evaluate` 関数内では, 数値を保存するスタックとして `values` を, 演算子を保存するスタックとして `operators` を定めています.
+
+## `modularized_calculator_3-3.py` より抜粋
+
+**```python**
+
+
