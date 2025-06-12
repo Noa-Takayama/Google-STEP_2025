@@ -22,6 +22,7 @@ elif token['type'] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
     while operators and precedence(operators[-1]) >= priority_for_operator(token['type']):
         # ...演算子スタックから演算子を取り出して計算する処理...
     operators.append(token['type'])
+```
 
 ループの条件は「演算子スタックが空でない」かつ「スタックの最後にある演算子の優先順位が, 現在のトークンの演算子の優先樹に以上である」ことです.
 
