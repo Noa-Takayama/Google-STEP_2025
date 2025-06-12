@@ -1,8 +1,7 @@
 ## 宿題4: 絶対値・小数の切り捨て・四捨五入の機能がついた計算機を作成する!!
 
-作成したコード名は, [`modularized_calculator_3-4.py`](modularized_calculator_3-4.py)です.
+作成したコードは, [`modularized_calculator_3-4.py`](modularized_calculator_3-4.py)です.
 
-# `modularized_calculator_3-4.py`
 
 四則演算に加え、絶対値、小数の切り捨て、四捨五入の機能を追加した電卓プログラムです。
 このドキュメントでは、課題4で追加された機能の要件と、その実装における主要な変更点について解説します。
