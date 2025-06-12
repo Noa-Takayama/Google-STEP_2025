@@ -17,11 +17,9 @@
 
 ## `modularized_calculator_3-3.py` より抜粋
 
-**```python**
-
+```python
 elif token['type'] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
     while operators and precedence(operators[-1]) >= precedence(token['type']):
         # ...演算子スタックから演算子を取り出して計算する処理...
     operators.append(token['type'])
-
 
