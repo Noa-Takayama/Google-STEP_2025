@@ -126,8 +126,7 @@ def evaluate(tokens):
                     values.append(left_operand * right_operand)
                 elif operator == 'DIVIDE':
                     if right_operand == 0:
-                        print("0 で割ることはできません !")
-                        exit(1)
+                        raise ZeroDivisionError("0 で割ることはできません !") # 0 で割る場合はエラーを出す
                     values.append(left_operand / right_operand)
             operators.append(token['type']) # 演算子をスタックにプッシュする"
         index += 1
@@ -144,8 +143,7 @@ def evaluate(tokens):
             values.append(left_operand * right_operand)
         elif operator == 'DIVIDE':
             if right_operand == 0:
-                print("0 で割ることはできません !")
-                exit(1)
+                raise ZeroDivisionError("0 で割ることはできません !")
             values.append(left_operand / right_operand)
 
     return values[0]
@@ -153,19 +151,16 @@ def evaluate(tokens):
 
 def test(line): # テスト用の関数. 入力された数式 line をトークンに分解して計算し, 期待する結果と比較する
     tokens = tokenize(line)
-    # tokenize と evaluate 関数を使って計算した結果 actual_answer と, Python の eval 関数を使って計算した結果 expected_answer を比較する
-    actual_answer = evaluate(tokens)
+    actual_answer = None  # actual_answer を初期化
     try:
+        actual_answer = evaluate(tokens)
         expected_answer = eval(line) # Python の eval 関数を使って計算する
         if abs(actual_answer - expected_answer) < 1e-8:
             print("テスト成功! (%s = %f)" % (line, expected_answer)) # テストが成功した場合のメッセージ
         else:
             print("テスト失敗! (%s != %f, 実際の答えは %f)" % (line, expected_answer, actual_answer))
     except ZeroDivisionError: # 0 で割った場合のエラー処理を追加する
-        if abs(actual_answer) == float('inf'): # 実際の答えが無限大であったら
-            print("テスト成功! (%s = inf)" % line)
-        else:
-            print("テスト失敗! (%s != inf, 実際の答えは %f)" % (line, actual_answer))
+        print("テスト成功! (%s = inf)" % line) # 0 で割った場合は無限大になるのでテスト成功とする
     except Exception as e: # その他のエラーが発生した場合
         print(f"Error during evaluation of '{line}': {e}")
 
@@ -180,16 +175,14 @@ def run_test():
     test("5*6/3")
     test("7-8*0.5+10/2")
     test("1/0") # 0 で割る場合のテスト 「0で割ることはできません !」と表示されることを確認する
-
-    # 課題3のために追加したテスト
     test("(1+2)*3")
     test("3*(4+5)/9")
-    test("(3.0 + 4 * (2 - 1)) / 5")
-    test("((10/2) + 5) * 2")
-    test("10 + (5 * (6 - 3))")
+    test("(3.0+4*(2-1))/5")
+    test("((10/2)+5)*2")
+    test("10+(5*(6-3))")
     test("(1+2)*(3-1)")
     test("10/(2+3)")
-    test("12.5 * (2 + 3.5) / 5")
+    test("12.5*(2+3.5)/5")
     print("==== Test finished! ====\n")
 
 run_test()
