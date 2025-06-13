@@ -82,7 +82,7 @@ def evaluate(tokens):
             return 2
         elif token_type in ['PLUS', 'MINUS']: # 足し算と引き算は優先度が低い
             return 1
-        else: # 括弧は優先度が最も高い
+        else: # 括弧は優先度が最も高い　
             return 0
 
     values = [] # 数字を保存するスタック
