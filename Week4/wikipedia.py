@@ -1,3 +1,4 @@
+# 課題 1, 2 のためのコード
 import sys
 import collections
 
@@ -74,10 +75,63 @@ class Wikipedia:
     # 'start': A title of the start page.
     # 'goal': A title of the goal page.
     def find_shortest_path(self, start, goal):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
+        print(f"'{start}' から '{goal}' までの最短経路を探索します!:")
+
+        # タイトルから ID を辿れるマップを作成する
+        title_to_id = {title: id for id, title in self.titles.items()}
+
+        # start と goal の ID をゲットする. 無い時にはエラーメッセージを出して終了する
+        if start not in title_to_id or goal not in title_to_id:
+            print("スタート, またはゴールのページが見つかりませんでした...orz")
+            print()
+            return
+        
+        start_id = title_to_id[start]
+        goal_id = title_to_id[goal]
+
+        # BFS のためのデータ構造を初期化する
+        queue = collections.deque([start_id]) # 探索するページの ID を入れるキュー
+        visited = {start_id}  # 訪問済みのページの ID を記録しておく. すでにスタートは訪問済み
+        back_to_parents = {} # スタートに続きうる経路をゴールから辿るため, どこからきたのかを記録する
+
+        # BFS の実装部分
+        is_path_found = False # スタートからゴールまでの道が存在するかを判定する
+        while queue:
+            current_id = queue.popleft() # キューの先頭からページを取り出す
+            
+            # 現在いるページの ID がゴールの ID と一致すれば, 道が見つかったことになる！
+            if current_id == goal_id:
+                is_path_found = True
+                break
+
+            # 現在のページからリンクとして辿れるページを検索する
+            for neighbor_id in self.links[current_id]:
+                if neighbor_id not in visited:
+                    visited.add(neighbor_id)
+                    back_to_parents[neighbor_id] = current_id # 親ページを記録
+                    queue.append(neighbor_id) # キューにページを追加する
+
+        # 経路の探索と出力部分
+        if is_path_found:
+            path = []
+            current = goal_id
+            while current != start_id: # スタートのページに戻るまで
+                path.append(current)
+                # back_to_parents にキーがあるか確認する
+                if current not in back_to_parents:
+                    print("経路の復元中にエラーが発生！")
+                    return
+                current = back_to_parents[current]
+            path.append(start_id)
+            path.reverse() # ゴールから辿っているから, 反転させてやる
+
+            # ID のリストをタイトルのリストに変換して出力する部分
+            path_titles = [self.titles[id] for id in path]
+            print(" -> ".join(path_titles))
+        else:
+            print("残念！ 経路は見つかりませんでした")
+
+        print()
 
 
     # Homework #2: Calculate the page ranks and print the most popular pages.
@@ -127,6 +181,7 @@ if __name__ == "__main__":
     # Example
     wikipedia.find_most_linked_pages()
     # Homework #1
+    wikipedia.find_shortest_path("渋谷", "小野妹子")
     wikipedia.find_shortest_path("渋谷", "パレートの法則")
     # Homework #2
     wikipedia.find_most_popular_pages()
