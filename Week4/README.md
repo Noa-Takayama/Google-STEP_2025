@@ -22,3 +22,22 @@
    queue = collections.deque([start.id])
    visited = {start.id}
    back_to_parents = {}
+
+2.  **探索プロセス**
+    キューが空になるまで、以下の処理を繰り返す.
+    * キューからページを取り出す.
+
+    * そのページがゴールであれば、探索を終了する.
+
+    * そうでなければ、そのページからリンクされている全ての未訪問ページを `visited` に追加し、キューの末尾に追加. 同時に、`back_to_parents`に親子関係を記録する.
+
+    ```python
+    # 現在のページからリンクとして辿れるページを検索する
+    for neighbor_id in self.links[current_id]:
+        if neighbor_id not in visited:
+            visited.add(neighbor_id)
+            back_to_parents[neighbor_id] = current_id # 親ページを記録
+            queue.append(neighbor_id) # キューにページを追加する
+    ```
+
+   
