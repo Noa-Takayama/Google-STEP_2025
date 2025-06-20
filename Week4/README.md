@@ -16,3 +16,9 @@
 
    * `back_to_parents` (`dict`): 経路を復元するための辞書. キーに「子ページID」, 値に「親ページID」を格納する.
    これにより, ゴールからスタートまで辿ることができる
+
+   ```python
+   # BFS のためのデータ構造の初期化
+   queue = collections.deque([start.id])
+   visited = {start.id}
+   back_to_parents = {}
