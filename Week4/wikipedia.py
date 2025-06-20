@@ -136,21 +136,75 @@ class Wikipedia:
 
     # Homework #2: Calculate the page ranks and print the most popular pages.
     def find_most_popular_pages(self):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
+        print("\nページランクの計算を開始します...")
 
+        num_pages = len(self.titles)
+        if num_pages == 0:
+            print("ページがありません... orz")
+            print()
+            return
+
+        # 1. パラメータの設定
+        damping_factor = 0.85
+        max_iterations = 100
+        convergence_threshold_squared = 0.01
+
+        # 2. ページランクの初期化
+        pagerank = {page_id: 1.0 for page_id in self.titles.keys()}
+
+        # 3. ページランクの計算（反復）
+        for i in range(max_iterations):
+            print(f"反復計算 {i + 1} 回目...")
+
+            new_pagerank_from_links = {page_id: 0.0 for page_id in self.titles.keys()}
+            dangling_sum = 0.0
+
+            for page_id, rank in pagerank.items():
+                outgoing_links = self.links[page_id]
+                if not outgoing_links:
+                    dangling_sum += rank
+                else:
+                    num_outgoing_links = len(outgoing_links)
+                    contribution = rank / num_outgoing_links
+                    for linked_id in outgoing_links:
+                        new_pagerank_from_links[linked_id] += contribution
+            
+            change_squared = 0.0
+            final_new_pagerank = {}
+
+            for page_id in pagerank.keys():
+                rank_from_links = new_pagerank_from_links[page_id]
+                dangling_rank_share = dangling_sum / num_pages
+                new_rank = (1 - damping_factor) + damping_factor * (rank_from_links + dangling_rank_share)
+                final_new_pagerank[page_id] = new_rank
+                change_squared += (new_rank - pagerank[page_id]) ** 2
+
+            pagerank = final_new_pagerank
+
+            total_pagerank = sum(pagerank.values())
+            print(f"  この反復後の合計ページランク: {total_pagerank:.4f} (目標値: {num_pages})")
+            print(f"  ランクの変化量 (二乗和): {change_squared:.4f}")
+
+            if change_squared < convergence_threshold_squared:
+                print(f"ランクが収束しました (変化量 < {convergence_threshold_squared}).")
+                break
+        else:
+            print(f"最大反復回数 {max_iterations} に達しました !!")
+
+        sorted_pages = sorted(pagerank.items(), key=lambda item: item[1], reverse=True)
+
+        print("\n最も人気のページトップ 10 は...:")
+        for i in range(min(10, len(sorted_pages))):
+            page_id, rank = sorted_pages[i]
+            print(f"{i+1:2d}. {self.titles[page_id]:<20} (Rank: {rank:.4f})")
+        
+        print()
 
     # Homework #3 (optional):
     # Search the longest path with heuristics.
     # 'start': A title of the start page.
     # 'goal': A title of the goal page.
-    def find_longest_path(self, start, goal):
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
+    
 
 
     # Helper function for Homework #3:
@@ -186,4 +240,4 @@ if __name__ == "__main__":
     # Homework #2
     wikipedia.find_most_popular_pages()
     # Homework #3 (optional)
-    wikipedia.find_longest_path("渋谷", "池袋")
+    # wikipedia.find_longest_path("渋谷", "池袋")
