@@ -144,7 +144,7 @@ class Wikipedia:
             print()
             return
 
-        # 1. パラメータの設定
+        # 1. パラメタの設定
         damping_factor = 0.85
         max_iterations = 100
         convergence_threshold_squared = 0.01
@@ -154,7 +154,7 @@ class Wikipedia:
 
         # 3. ページランクの計算（反復）
         for i in range(max_iterations):
-            print(f"反復計算 {i + 1} 回目...")
+            print(f"反復計算 {i + 1} 回目...") # プログラムがどこまで反復しているか視覚化
 
             new_pagerank_from_links = {page_id: 0.0 for page_id in self.titles.keys()}
             dangling_sum = 0.0
@@ -182,7 +182,7 @@ class Wikipedia:
             pagerank = final_new_pagerank
 
             total_pagerank = sum(pagerank.values())
-            print(f"  この反復後の合計ページランク: {total_pagerank:.4f} (目標値: {num_pages})")
+            print(f"  この反復後の合計ページランク: {total_pagerank:.4f} (目標値: {num_pages})") # 目標値と一致していることを確認
             print(f"  ランクの変化量 (二乗和): {change_squared:.4f}")
 
             if change_squared < convergence_threshold_squared:
