@@ -1,5 +1,5 @@
 # 課題 1, 2 のためのコード
-import sys
+import sys # 読み込みのために必要
 import collections
 
 class Wikipedia:
@@ -147,7 +147,7 @@ class Wikipedia:
         # 1. パラメタの設定
         damping_factor = 0.85
         max_iterations = 100
-        convergence_threshold_squared = 0.01
+        convergence_threshold_squared = 0.01 # ここはローカルにするのではなく, コマンドライン引数にできるともっとバリエーション豊富になる！！
 
         # 2. ページランクの初期化
         pagerank = {page_id: 1.0 for page_id in self.titles.keys()}
@@ -174,7 +174,7 @@ class Wikipedia:
 
             for page_id in pagerank.keys():
                 rank_from_links = new_pagerank_from_links[page_id]
-                dangling_rank_share = dangling_sum / num_pages
+                dangling_rank_share = dangling_sum / num_pages # 外に出してやると尚良い！
                 new_rank = (1 - damping_factor) + damping_factor * (rank_from_links + dangling_rank_share)
                 final_new_pagerank[page_id] = new_rank
                 change_squared += (new_rank - pagerank[page_id]) ** 2
