@@ -66,4 +66,33 @@
     pagerank = {page_id: 1.0 for page_id in self.titles.keys()}
     ```
 
-   
+2.  **ランクの反復計算**
+    ループ処理の中で、現在のランク値に基づいて新しいランク値を計算します。
+    * **ランクの分配**: 各ページは、自身の持つランク(`rank`)を外部リンク数(`num_outgoing_links`)で割り、各リンク先ページに均等に分配(`contribution`)します。
+
+        ```python
+        contribution = rank / num_outgoing_links
+        for linked_id in outgoing_links:
+            new_pagerank_from_links[linked_id] += contribution
+        ```
+
+    * **Dangling Nodeの処理**: 外部リンクを一つも持たないページ（Dangling Node）は、ランクをどこにも分配できず、系全体からランクが失われる原因となります。これを防ぐため、Dangling Nodeが持つランクは一旦 `dangling_sum` に集計し、次のステップで全ページに均等に再分配します。
+
+    * **更新式**: 新しいページランクは、ダンピングファクター `d` (今回は0.85) を用いて以下の式で計算します。
+        `new_rank = (1 - d) + d * (リンク経由で得たランク + Dangling Nodeから再分配されたランク)`
+        `(1 - d)` の部分は、どのページからでも一定確率で遷移してくる「ランダムジャンプ」を表し、どのページも最低限のランクを持つことを保証します。
+
+3.  **収束判定**
+    計算を無限に続けないため、ランク値の変化が十分に小さくなった時点で計算を打ち切ります。今回は「前回と今回のランク値の差の二乗和」を計算し、その値が予め定めた閾値 (`0.01`) を下回った場合に「収束した」と判断します。
+
+    ```python
+    # ランクの変化量 (二乗和)を計算
+    change_squared += (new_rank - pagerank[page_id]) ** 2
+    
+    # ...
+    
+    # 収束条件をチェック
+    if change_squared < convergence_threshold_squared:
+        print(f"ランクが収束しました...")
+        break
+    ```
