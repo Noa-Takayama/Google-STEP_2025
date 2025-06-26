@@ -4,7 +4,7 @@ import random
 import sys
 import time
 
-# --- 1. データ構造とヘルパー関数 ---
+# データ構造とヘルパ関数の実装
 
 def read_cities(file_path):
     """
@@ -46,8 +46,6 @@ def calculate_total_distance(route, cities):
         to_city = cities[route[(i + 1) % num_cities]]
         total_dist += calculate_distance(from_city, to_city)
     return total_dist
-
-# --- 2. アルゴリズムの中核部分 ---
 
 def local_search_2opt(route, cities):
     """
@@ -107,8 +105,6 @@ def double_bridge_kick(route):
     new_route = seg1 + seg4 + seg3 + seg2 + seg5
     return new_route
 
-# --- 3. 反復局所探索法のメインフロー ---
-
 def iterated_local_search(cities, max_iterations=100, time_limit=60):
     """
     反復局所探索法(ILS)を実行する
@@ -153,7 +149,7 @@ def iterated_local_search(cities, max_iterations=100, time_limit=60):
     print(f"\nILS finished. Final Best Distance: {best_dist:.2f}")
     return x_best
 
-# --- 4. メイン実行ブロック ---
+# メイン関数
 if __name__ == "__main__":
     # コマンドライン引数からファイルパスを取得
     # 例: python solve_ils.py input/input_3.csv output/output_3.csv
