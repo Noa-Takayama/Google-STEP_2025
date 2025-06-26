@@ -83,6 +83,8 @@ done
 # 2-opt法の実行中に以下のような行が1秒ごとに更新され続ける
 -> 2-opt search in progress... (Checking node i=152/2048)
 
+```
+
 ### 局所最適解から逃げる (`solver_ils3.py`)
 
 初期経路の生成方法をランダムなものから最近傍法に変更した.
