@@ -204,17 +204,101 @@ class Wikipedia:
     # Search the longest path with heuristics.
     # 'start': A title of the start page.
     # 'goal': A title of the goal page.
-    
+    def find_longest_path(self, start, goal):
+        print(f"'{start}' から '{goal}' までの（重複なし）最長経路を探索します...")
 
+        # 0. タイトルからIDへの変換と存在チェック
+        title_to_id = {title: id for id, title in self.titles.items()}
+        if start not in title_to_id or goal not in title_to_id:
+            print("スタートまたはゴールのページが見つかりませんでした。")
+            print()
+            return
 
-    # Helper function for Homework #3:
-    # Please use this function to check if the found path is well formed.
-    # 'path': An array of page IDs that stores the found path.
-    #     path[0] is the start page. path[-1] is the goal page.
-    #     path[0] -> path[1] -> ... -> path[-1] is the path from the start
-    #     page to the goal page.
-    # 'start': A title of the start page.
-    # 'goal': A title of the goal page.
+        start_id = title_to_id[start]
+        goal_id = title_to_id[goal]
+
+        # ----------------------------------------------------------------
+        # 1. ヒューリスティックの計算：ご提案の通り、ゴールからの距離を計算します
+        # ----------------------------------------------------------------
+        print("ヒューリスティック（ゴールからの距離）の計算を開始します...")
+        # 逆引きリンク（dst -> src）を作成
+        reversed_links = {id: [] for id in self.titles}
+        for src_id, dst_ids in self.links.items():
+            for dst_id in dst_ids:
+                reversed_links[dst_id].append(src_id)
+
+        # ゴールからBFSで各ノードへの最短距離を計算
+        distances_from_goal = {goal_id: 0}
+        queue = collections.deque([goal_id])
+        
+        while queue:
+            current_id = queue.popleft()
+            # 逆引きリンクを辿って、ゴールに到達できるページを探索
+            for neighbor_id in reversed_links[current_id]:
+                if neighbor_id not in distances_from_goal:
+                    distances_from_goal[neighbor_id] = distances_from_goal[current_id] + 1
+                    queue.append(neighbor_id)
+        
+        print("ヒューリスティックの計算が完了しました。")
+
+        # ----------------------------------------------------------------
+        # 2. バックトラッキングを用いた深さ優先探索（DFS）で最長経路を探索
+        # ----------------------------------------------------------------
+        # クラスの属性として最長経路を保存することで、再帰関数内で更新しやすくします
+        self.longest_path_found = []
+
+        # path は現在たどっている経路（IDのリスト）
+        def dfs(current_path):
+            current_id = current_path[-1]
+
+            # 次の探索候補となる隣接ページをリストアップ
+            neighbors_to_visit = []
+            for neighbor_id in self.links[current_id]:
+                # ゴールに到達した場合
+                if neighbor_id == goal_id:
+                    final_path = current_path + [goal_id]
+                    # 現在見つかっている最長経路より長ければ更新
+                    if len(final_path) > len(self.longest_path_found):
+                        self.longest_path_found = final_path
+                        # 途中経過を表示
+                        print(f"新しい最長経路を発見 (長さ: {len(self.longest_path_found)})")
+                    # ゴールに到達したので、この先は探索しない
+                    continue
+
+                # まだ訪問しておらず（重複がなく）、ゴールでもないページを候補に追加
+                if neighbor_id not in current_path:
+                    neighbors_to_visit.append(neighbor_id)
+
+            # ヒューリスティックに基づいて隣接ページをソート
+            # ゴールから遠い（distanceが大きい）ページを優先的に探索する
+            # ゴールから到達不能なページは距離が計算できないため、優先度を最低(-1)にする
+            neighbors_to_visit.sort(key=lambda nid: distances_from_goal.get(nid, -1), reverse=True)
+
+            # 優先順位の高い（ゴールから遠い）ページから順に再帰的に探索
+            for neighbor_id in neighbors_to_visit:
+                dfs(current_path + [neighbor_id])
+
+        # 探索開始
+        print("最長経路の探索を開始します...(時間がかかる場合があります)")
+        dfs([start_id])
+
+        # ----------------------------------------------------------------
+        # 3. 結果の出力
+        # ----------------------------------------------------------------
+        if not self.longest_path_found:
+            print("残念ながら、経路は見つかりませんでした。")
+        else:
+            print("\n探索完了！見つかった最長経路は以下の通りです:")
+            path_titles = [self.titles[id] for id in self.longest_path_found]
+            print(" -> ".join(path_titles))
+            print(f"経路の長さ: {len(self.longest_path_found)} ページ")
+            
+            # 念のため、パスが正しいかチェック
+            self.assert_path(self.longest_path_found, start, goal)
+            print("パスの正当性を確認しました。")
+        
+        print()
+
     def assert_path(self, path, start, goal):
         assert(start != goal)
         assert(len(path) >= 2)
@@ -240,4 +324,4 @@ if __name__ == "__main__":
     # Homework #2
     wikipedia.find_most_popular_pages()
     # Homework #3 (optional)
-    # wikipedia.find_longest_path("渋谷", "池袋")
+    wikipedia.find_longest_path("渋谷", "池袋")
