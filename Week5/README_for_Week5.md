@@ -57,6 +57,7 @@ for i in {0..6}; do
     echo "--- Solving Challenge $i ---"
     python solver_ils.py "input_$i.csv" "output_$i.csv"
 done
+```
 
 ただし, めちゃくちゃ時間がかかるかもしれないので要注意
 
