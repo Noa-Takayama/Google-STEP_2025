@@ -1,0 +1,10 @@
+# あんまりにも 2048 都市が遅かったので、放置してもちゃんとプログラムが動くようにしてもらった
+
+Solving TSP for 2048 cities from 'input_6.csv'...
+Initial Best Distance: 42216.73
+
+Time limit of 600 seconds reached.
+
+ILS finished. Final Best Distance: 42216.73
+Best route saved to 'output_6.csv'.
+Final validated distance: 42216.725702363154
