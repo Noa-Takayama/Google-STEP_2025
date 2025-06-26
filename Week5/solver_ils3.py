@@ -137,7 +137,7 @@ def iterated_local_search(cities, max_iterations=100, time_limit=60):
     best_dist = calculate_total_distance(x_best, cities)
     print(f"Initial Best Distance: {best_dist:.2f}\n")
 
-    # 2. 反復
+    # 2. 反復　ずっとコードを回し続けていて, 終わりが来なくて気が狂いそうだったので現状どこまで計算が進んでいるのかを教えてもらう
     print("[Phase 3] Starting Iterated Local Search main loop...")
     for i in range(max_iterations):
         print(f"--- ILS Iteration {i+1}/{max_iterations} ---")
@@ -155,18 +155,18 @@ def iterated_local_search(cities, max_iterations=100, time_limit=60):
         if new_dist < best_dist:
             x_best = x_new
             best_dist = new_dist
-            print(f"  -> 🎉 New best solution found! Distance: {best_dist:.2f}\n")
+            print(f"  -> 🎉 New best solution found! Distance: {best_dist:.2f}\n") # おめでとう🥳
         else:
-            print(f"  -> No improvement. Current best: {best_dist:.2f}\n")
+            print(f"  -> No improvement. Current best: {best_dist:.2f}\n") # 改善されないのなら現状の最高スコアを吐き出す
 
     print(f"ILS finished. Final Best Distance: {best_dist:.2f}")
     return x_best
 
 # メイン関数
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 3: # コマンドライン引数が 3 つ未満だったら
         print("Usage: python solve_ils.py <input_file> <output_file>")
-        sys.exit(1)
+        sys.exit(1) # エラーが吐かれたら, 使い方の説明も書いておく
         
     input_file = sys.argv[1]
     output_file = sys.argv[2]
