@@ -105,4 +105,4 @@ done
 | Challenge 3 | 64 | 8118.40 |
 | Challenge 4 | 128 | 10,539.85 |
 | Challenge 5 | 512 | 20,287.53 |
-| Challenge 6 | 2048 | 41,818.12 |
+| Challenge 6 | 2048 | 41,625.73 |
