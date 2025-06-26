@@ -64,7 +64,7 @@ def nearest_neighbor_heuristic(cities):
         
     return route
 
-# ====================【進捗表示機能を追加】====================
+# どのくらい計算が進んでいるのかをターミナル上に表示. わからないと気が狂いそう
 def local_search_2opt(route, cities):
     """
     2-opt法による局所探索。1秒ごとに進捗を表示する。
@@ -176,11 +176,11 @@ if __name__ == "__main__":
     print(f"Solving TSP for {num_cities} cities from '{input_file}'...")
     
     if num_cities < 100:
-        iterations = 500
+        iterations = 5000 # もっと回せば、 N = 128あたりまでは多分理論値までいけるんじゃない？
         time_limit_sec = 300
     elif num_cities < 500:
-        iterations = 1000
-        time_limit_sec = 180
+        iterations = 10000
+        time_limit_sec = 18000000
     else:
         iterations = 5000 # もっと回せばいいじゃん
 
