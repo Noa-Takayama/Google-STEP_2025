@@ -1,4 +1,4 @@
-# 課題 1, 2 のためのコード
+# 課題 3 のためだけのコード
 import sys # 読み込みのために必要
 import collections
 
@@ -198,6 +198,8 @@ class Wikipedia:
             page_id, rank = sorted_pages[i]
             print(f"{i+1:2d}. {self.titles[page_id]:<20} (Rank: {rank:.4f})")
         
+        print() # ここに空行がなかったので追加しました
+
     # Homework #3 (optional):
     # Search the longest path with heuristics.
     # 'start': A title of the start page.
@@ -215,7 +217,7 @@ class Wikipedia:
         start_id = title_to_id[start]
         goal_id = title_to_id[goal]
 
-        # 1. ヒューリスティックの計算（変更なし）
+        # 1. ヒューリスティックの計算
         print("ヒューリスティック（ゴールからの距離）の計算を開始します...")
         reversed_links = {id: [] for id in self.titles}
         for src_id, dst_ids in self.links.items():
@@ -232,9 +234,7 @@ class Wikipedia:
                     queue.append(neighbor_id)
         print("ヒューリスティックの計算が完了しました。")
 
-        # ----------------------------------------------------------------
-        # 2. 【変更点】再帰ではなく、スタックを用いたDFSで最長経路を探索
-        # ----------------------------------------------------------------
+        # 2. スタックを用いたDFSで最長経路を探索
         self.longest_path_found = []
         
         # スタックには、これから探索すべき経路（ページのIDリスト）を格納します。
@@ -265,11 +265,10 @@ class Wikipedia:
             neighbors_to_visit.sort(key=lambda nid: distances_from_goal.get(nid, -1), reverse=True)
             
             # ソートされた候補をスタックに追加する
-            # これにより、次にpopされる（取り出される）のはヒューリスティックが最も高い経路になる
             for neighbor_id in neighbors_to_visit:
                  stack.append(current_path + [neighbor_id])
 
-        # 3. 結果の出力（変更なし）
+        # 3. 結果の出力
         if not self.longest_path_found:
             print("残念ながら、経路は見つかりませんでした。")
         else:
@@ -279,11 +278,12 @@ class Wikipedia:
             print(f"経路の長さ: {len(self.longest_path_found)} ページ")
             
             self.assert_path(self.longest_path_found, start, goal)
-            print("パスの正当性を確認しました。")
+            print("パスの正当性を確認しました。") # これで, 見つけた経路がちゃんと渋谷と池袋をつなぐことを確認した
         
         print()
 
     
+    # Helper function for Homework #3:
     def assert_path(self, path, start, goal):
         assert(start != goal)
         assert(len(path) >= 2)
@@ -299,14 +299,16 @@ if __name__ == "__main__":
         exit(1)
 
     wikipedia = Wikipedia(sys.argv[1], sys.argv[2])
-    # Example
-    wikipedia.find_longest_titles()
-    # Example
-    wikipedia.find_most_linked_pages()
-    # Homework #1
-    wikipedia.find_shortest_path("渋谷", "小野妹子")
-    wikipedia.find_shortest_path("渋谷", "パレートの法則")
-    # Homework #2
-    wikipedia.find_most_popular_pages()
+    # # Example
+    # wikipedia.find_longest_titles()
+    # # Example
+    # wikipedia.find_most_linked_pages()
+    # # Homework #1
+    # wikipedia.find_shortest_path("渋谷", "小野妹子")
+    # wikipedia.find_shortest_path("渋谷", "パレートの法則")
+    # # Homework #2
+    # wikipedia.find_most_popular_pages()
+    
     # Homework #3 (optional)
+    # 以下の行だけが実行される.
     wikipedia.find_longest_path("渋谷", "池袋")
