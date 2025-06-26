@@ -176,15 +176,15 @@ if __name__ == "__main__":
     print(f"Solving TSP for {num_cities} cities from '{input_file}'...")
     
     if num_cities < 100:
-        iterations = 200
-        time_limit_sec = 30
+        iterations = 500
+        time_limit_sec = 300
     elif num_cities < 500:
-        iterations = 100
+        iterations = 1000
         time_limit_sec = 180
     else:
-        iterations = 500 # もっと回せばいいじゃん
+        iterations = 5000 # もっと回せばいいじゃん
 
-        time_limit_sec = 30000 # もっと長く回せばいいじゃん
+        time_limit_sec = 3000000 # もっと長く回せばいいじゃん
 
     best_route = iterated_local_search(cities, max_iterations=iterations, time_limit=time_limit_sec)
 
