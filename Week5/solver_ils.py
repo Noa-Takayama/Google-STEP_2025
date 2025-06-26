@@ -4,8 +4,6 @@ import random
 import sys
 import time
 
-# データ構造とヘルパ関数の実装
-
 def read_cities(file_path):
     """
     CSVファイルから都市の座標を読み込む関数
@@ -41,7 +39,6 @@ def calculate_total_distance(route, cities):
     total_dist = 0
     num_cities = len(route)
     for i in range(num_cities):
-        # i番目の都市と(i+1)番目の都市（最後は最初の都市）の間の距離
         from_city = cities[route[i]]
         to_city = cities[route[(i + 1) % num_cities]]
         total_dist += calculate_distance(from_city, to_city)
@@ -58,23 +55,18 @@ def local_search_2opt(route, cities):
         improved = False
         for i in range(num_cities - 1):
             for j in range(i + 2, num_cities):
-                # 辺(i, i+1)と(j, j_next)を(i, j)と(i+1, j_next)に交換
                 j_next = (j + 1) % num_cities
                 
-                # 現在の辺の距離
                 original_dist = calculate_distance(cities[current_route[i]], cities[current_route[i+1]]) \
                               + calculate_distance(cities[current_route[j]], cities[current_route[j_next]])
-                # 新しい辺の距離
+                
                 new_dist = calculate_distance(cities[current_route[i]], cities[current_route[j]]) \
                          + calculate_distance(cities[current_route[i+1]], cities[current_route[j_next]])
 
-                # 距離が短くなるなら経路を更新
                 if new_dist < original_dist:
-                    # i+1からjまでを逆順にする
                     current_route[i+1:j+1] = reversed(current_route[i+1:j+1])
                     improved = True
-                    # 改善が見つかったら、ループを最初からやり直す
-                    break 
+                    break
             if improved:
                 break
     return current_route
@@ -87,21 +79,15 @@ def double_bridge_kick(route):
     kicked_route = route[:]
     num_cities = len(kicked_route)
     
-    # 重複しない4つの切断点をランダムに選ぶ
-    # pos1, pos2, pos3, pos4 はセグメントの「先頭」のインデックス
     indices = sorted(random.sample(range(num_cities), 4))
     p1, p2, p3, p4 = indices
 
-    # 4つのセグメントを生成
     seg1 = kicked_route[:p1]
     seg2 = kicked_route[p1:p2]
     seg3 = kicked_route[p2:p3]
     seg4 = kicked_route[p3:p4]
     seg5 = kicked_route[p4:]
 
-    # セグメントを結合して新しい経路を作成 (例: 1-4-3-2-5)
-    # 元の順序: seg1 -> seg2 -> seg3 -> seg4 -> seg5
-    # 新しい順序: seg1 -> seg4 -> seg3 -> seg2 -> seg5
     new_route = seg1 + seg4 + seg3 + seg2 + seg5
     return new_route
 
@@ -113,36 +99,28 @@ def iterated_local_search(cities, max_iterations=100, time_limit=60):
     start_time = time.time()
     
     # 1. 初期化
-    # ランダムな初期解を生成
     x_0 = list(range(num_cities))
     random.shuffle(x_0)
     
-    # 最初の局所最適解を見つける
     x_best = local_search_2opt(x_0, cities)
     best_dist = calculate_total_distance(x_best, cities)
     print(f"Initial Best Distance: {best_dist:.2f}")
 
     # 2. 反復
     for i in range(max_iterations):
-        # 時間制限チェック
         if time.time() - start_time > time_limit:
-            print(f"Time limit of {time_limit} seconds reached.")
+            print(f"\nTime limit of {time_limit} seconds reached.")
             break
             
-        # a. 摂動 (Kick)
         x_kicked = double_bridge_kick(x_best)
-        
-        # b. 局所探索
         x_new = local_search_2opt(x_kicked, cities)
         new_dist = calculate_total_distance(x_new, cities)
         
-        # c. 受容基準
         if new_dist < best_dist:
             x_best = x_new
             best_dist = new_dist
             print(f"Iteration {i+1}: New best solution found! Distance: {best_dist:.2f}")
         else:
-            # 改善しなかった場合も進捗を表示（任意）
             if (i + 1) % 10 == 0:
                 print(f"Iteration {i+1}: No improvement. Current best: {best_dist:.2f}")
 
@@ -151,8 +129,6 @@ def iterated_local_search(cities, max_iterations=100, time_limit=60):
 
 # メイン関数
 if __name__ == "__main__":
-    # コマンドライン引数からファイルパスを取得
-    # 例: python solve_ils.py input/input_3.csv output/output_3.csv
     if len(sys.argv) != 3:
         print("Usage: python solve_ils.py <input_file> <output_file>")
         sys.exit(1)
@@ -160,13 +136,11 @@ if __name__ == "__main__":
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
-    # 都市データを読み込み
     cities = read_cities(input_file)
     num_cities = len(cities)
     print(f"Solving TSP for {num_cities} cities from '{input_file}'...")
     
-    # 都市数に応じてパラメータを調整
-    # これはあくまで一例。最適なパラメータは実験的に決める必要があります。
+    # 都市数に応じたパラメータ設定
     if num_cities < 100:
         iterations = 200
         time_limit_sec = 30
@@ -177,13 +151,10 @@ if __name__ == "__main__":
         iterations = 50
         time_limit_sec = 600 # 10分
 
-    # 反復局所探索法を実行
     best_route = iterated_local_search(cities, max_iterations=iterations, time_limit=time_limit_sec)
 
-    # 結果をファイルに書き込み
     write_solution(output_file, best_route)
     print(f"Best route saved to '{output_file}'.")
 
-    # 検証用：最終的な経路長を計算して表示
     final_distance = calculate_total_distance(best_route, cities)
     print(f"Final validated distance: {final_distance}")
