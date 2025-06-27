@@ -44,6 +44,7 @@ def calculate_total_distance(route, cities):
         total_dist += calculate_distance(from_city, to_city)
     return total_dist
 
+# 最近傍法によって, 最初の都市から最も近い都市を選ぶ, ということを繰り返すことで, そこそこいい初期解を出す
 def nearest_neighbor_heuristic(cities):
     """
     最近傍法で初期解を生成する
@@ -65,6 +66,7 @@ def nearest_neighbor_heuristic(cities):
     return route
 
 # どのくらい計算が進んでいるのかをターミナル上に表示. わからないと気が狂いそう
+# 2-opt法を用いた. これにより, 交差した部分を紐解くことで, より近いルートを発見することができる
 def local_search_2opt(route, cities):
     """
     2-opt法による局所探索。1秒ごとに進捗を表示する。
@@ -78,14 +80,14 @@ def local_search_2opt(route, cities):
         improved = False
         for i in range(num_cities - 1):
             for j in range(i + 2, num_cities):
-                # --- 1秒ごとの進捗表示ロジック ---
+                # 1秒ごとの進捗表示ロジック
                 current_time = time.time()
                 if current_time - last_update_time > 1.0:
                     progress_msg = f"    -> 2-opt search in progress... (Checking node i={i}/{num_cities})"
                     sys.stdout.write(f"\r{progress_msg:<80}")
                     sys.stdout.flush()
                     last_update_time = current_time
-                # --- 進捗表示ロジックここまで ---
+                # 進捗表示ロジックここまで 
                 
                 j_next = (j + 1) % num_cities
                 original_dist = calculate_distance(cities[current_route[i]], cities[current_route[i+1]]) \
@@ -104,6 +106,9 @@ def local_search_2opt(route, cities):
     sys.stdout.flush()
     return current_route
 
+# 2-opt法単体では, 一つの山の頂上に辿り着いただけかも. もっと高い山があるのに, そこが最高だと思ってしまう恐れ.
+# 今いる最良ルートから, あえてルートを大きく変えて, 未知のルートへジャンプする
+# 
 def double_bridge_kick(route):
     """
     Double Bridge操作による摂動(kick)。
