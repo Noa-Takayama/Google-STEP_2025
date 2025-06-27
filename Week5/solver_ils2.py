@@ -173,7 +173,7 @@ if __name__ == "__main__":
         iterations = 200
         time_limit_sec = 30
     elif num_cities < 500:
-        iterations = 100
+        iterations = 100000
         time_limit_sec = 180
     else:
         iterations = 50

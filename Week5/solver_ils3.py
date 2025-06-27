@@ -179,10 +179,10 @@ if __name__ == "__main__":
         iterations = 5000 # もっと回せば、 N = 128あたりまでは多分理論値までいけるんじゃない？
         time_limit_sec = 300
     elif num_cities < 500:
-        iterations = 10000
+        iterations = 100000 # N = 128 のとき, 値が固定化されたような気がしたので, 100000回回してみる
         time_limit_sec = 18000000
     else:
-        iterations = 5000 # もっと回せばいいじゃん
+        iterations = 50000 # もっと回せばいいじゃん
 
         time_limit_sec = 3000000 # もっと長く回せばいいじゃん
 
