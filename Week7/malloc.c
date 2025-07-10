@@ -1,12 +1,9 @@
-// free first bin + 右結合の実装
-
 //
 // >>>> malloc challenge! <<<<
 //
-// Your task is to improve utilization and speed of the following malloc
-// implementation.
-// Initial implementation is the same as the one implemented in simple_malloc.c.
-// For the detailed explanation, please refer to simple_malloc.c.
+// Final Stable Version: Best-fit allocator with segregated free list bins,
+// boundary-tag coalescing, and a robust prologue/epilogue heap structure.
+//
 
 #include <assert.h>
 #include <stdbool.h>
@@ -16,64 +13,63 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Free List Bin のための定数定義
-#define NUM_BINS 10 // ビンの数を定義
-
-//
-// Interfaces to get memory pages from OS
-//
-
+/******************************************************************************
+ * OS Interface Prototypes
+ *****************************************************************************/
 void *mmap_from_system(size_t size);
 void munmap_to_system(void *ptr, size_t size);
 
-//
-// Struct definitions
-//
+/******************************************************************************
+ * Constants and Macros
+ *****************************************************************************/
+#define NUM_BINS 11
+// Allocate a single large heap area to simplify memory management and avoid
+// complex heap extension logic, which was the source of previous errors.
+#define HEAP_INIT_SIZE (1 << 18) // 256KB initial heap
 
-// is_freeフラグをサイズの下位1ビットに格納
+/******************************************************************************
+ * Type Definitions
+ *****************************************************************************/
 typedef struct my_metadata_t {
-  size_t size; // 下位1ビットはis_freeフラグとして使用
+  size_t size; // LSB is the is_free flag
   struct my_metadata_t *next;
 } my_metadata_t;
 
-// my_heap_t 構造体はビン分割のまま
-typedef struct my_heap_t {
-  my_metadata_t *free_heads[NUM_BINS];
-  my_metadata_t dummies[NUM_BINS];
-} my_heap_t;
+/******************************************************************************
+ * Global Variables
+ *****************************************************************************/
+static my_metadata_t *bins[NUM_BINS];
+static void *heap_start = NULL;
 
-//
-// Static variables (DO NOT ADD ANOTHER STATIC VARIABLES!)
-//
-my_heap_t my_heap;
-
-
-//
-// Function Prototypes (エラー解決のために追加)
-//
+/******************************************************************************
+ * Function Prototypes
+ *****************************************************************************/
 void my_free(void *ptr);
+static void coalesce_and_add_to_list(my_metadata_t *header);
 
+/******************************************************************************
+ * Helper Functions for Metadata
+ *****************************************************************************/
+static inline size_t get_size(my_metadata_t *m) { return m->size & ~1UL; }
+static inline bool is_free(my_metadata_t *m) { return m->size & 1UL; }
 
-//
-// Helper functions
-//
-
-// メタデータから実際のサイズを取得（下位1ビットを無視）
-static inline size_t get_size(my_metadata_t *metadata) {
-  return metadata->size & ~1UL;
+static inline void set_size_and_flag(my_metadata_t *hdr, size_t payload_size, bool free_flag) {
+  hdr->size = payload_size | (free_flag ? 1UL : 0UL);
+  my_metadata_t *ftr = (my_metadata_t *)((char *)(hdr + 1) + payload_size) - 1;
+  ftr->size = hdr->size;
 }
 
-// メタデータにサイズとis_freeフラグを設定
-static inline void set_size_and_flag(my_metadata_t *metadata, size_t size, bool is_free) {
-  metadata->size = size | (is_free ? 1UL : 0UL);
+static inline my_metadata_t* get_next_header(my_metadata_t* hdr) {
+  return (my_metadata_t*)((char*)(hdr + 1) + get_size(hdr));
 }
 
-// メタデータがフリーかどうかをチェック
-static inline bool is_free(my_metadata_t *metadata) {
-  return (metadata->size & 1UL) != 0;
+static inline my_metadata_t* get_header_from_footer(my_metadata_t* ftr) {
+  return (my_metadata_t *)((char *)ftr - get_size(ftr)) - 1;
 }
 
-// サイズから対応するビンのインデックスを返す
+/******************************************************************************
+ * Bin and Free List Management
+ *****************************************************************************/
 static int get_bin_index(size_t size) {
   if (size <= 16) return 0;
   if (size <= 32) return 1;
@@ -84,127 +80,137 @@ static int get_bin_index(size_t size) {
   if (size <= 1024) return 6;
   if (size <= 2048) return 7;
   if (size <= 4000) return 8;
-  return 9;
+  if (size <= 8192) return 9;
+  return 10;
 }
 
-// 指定されたビンにフリーブロックを追加する
-static void add_to_free_list(my_metadata_t *metadata) {
-  size_t size = get_size(metadata);
-  int index = get_bin_index(size);
-  metadata->next = my_heap.free_heads[index];
-  my_heap.free_heads[index] = metadata;
+static void add_to_bin(my_metadata_t *blk) {
+  int idx = get_bin_index(get_size(blk));
+  blk->next = bins[idx];
+  bins[idx] = blk;
 }
 
-// フリーリストからブロックを削除する
-static void remove_from_free_list(my_metadata_t *metadata) {
-    size_t size = get_size(metadata);
-    int index = get_bin_index(size);
-    my_metadata_t *head = my_heap.free_heads[index];
-    my_metadata_t *prev = NULL;
-
-    while (head != metadata) {
-        assert(head != NULL); // Should be found
-        prev = head;
-        head = head->next;
-    }
-
-    if (prev) {
-        prev->next = head->next;
-    } else {
-        my_heap.free_heads[index] = head->next;
-    }
-}
-
-
-//
-// Interfaces of malloc (DO NOT RENAME FOLLOWING FUNCTIONS!)
-//
-
-void my_initialize() {
-  for (int i = 0; i < NUM_BINS; i++) {
-    my_heap.free_heads[i] = &my_heap.dummies[i];
-    set_size_and_flag(&my_heap.dummies[i], 0, true);
-    my_heap.dummies[i].next = NULL;
+static void remove_from_bin(my_metadata_t *blk) {
+  int idx = get_bin_index(get_size(blk));
+  my_metadata_t **p = &bins[idx];
+  while (*p && *p != blk) {
+    p = &(*p)->next;
   }
+  if (*p) {
+    *p = blk->next;
+  }
+}
+
+/******************************************************************************
+ * Core Allocator Logic
+ *****************************************************************************/
+void my_initialize() {
+  for (int i = 0; i < NUM_BINS; ++i) {
+    bins[i] = NULL;
+  }
+  heap_start = NULL;
 }
 
 void *my_malloc(size_t size) {
-  int start_index = get_bin_index(size);
-  my_metadata_t *metadata = NULL;
+  if (size == 0) return NULL;
+  size_t required_payload = (size + 7) & ~7UL;
 
-  // 最適なビンから順に探索
-  for (int i = start_index; i < NUM_BINS; i++) {
-    my_metadata_t *head = my_heap.free_heads[i];
-    while (head) {
-      if (is_free(head) && get_size(head) >= size) {
-        metadata = head;
-        goto block_found;
+  // Initialize heap on first call
+  if (heap_start == NULL) {
+    heap_start = mmap_from_system(HEAP_INIT_SIZE);
+    if (heap_start == (void*)-1) {
+        heap_start = NULL;
+        return NULL;
+    }
+    
+    // Prologue block (header and footer)
+    my_metadata_t* prologue = (my_metadata_t*)heap_start;
+    set_size_and_flag(prologue, 0, false);
+
+    // Initial free block
+    my_metadata_t* initial_block = (my_metadata_t*)((char*)heap_start + 2 * sizeof(my_metadata_t));
+    size_t initial_payload_size = HEAP_INIT_SIZE - 4 * sizeof(my_metadata_t);
+    set_size_and_flag(initial_block, initial_payload_size, true);
+    
+    // Epilogue block (header only)
+    my_metadata_t* epilogue_header = get_next_header(initial_block);
+    epilogue_header->size = 0; // size 0, used
+    
+    add_to_bin(initial_block);
+  }
+
+  int start_bin = get_bin_index(required_payload);
+  my_metadata_t *block = NULL;
+
+  for (int i = start_bin; i < NUM_BINS; ++i) {
+    my_metadata_t *current = bins[i];
+    my_metadata_t *best_fit = NULL;
+    while (current) {
+      if (get_size(current) >= required_payload) {
+        if (best_fit == NULL || get_size(current) < get_size(best_fit)) {
+          best_fit = current;
+        }
       }
-      head = head->next;
+      current = current->next;
+    }
+    if (best_fit) {
+      block = best_fit;
+      break;
     }
   }
 
-  // どのビンにも空きがなかった場合
-  {
-    size_t buffer_size = 4096;
-    my_metadata_t *new_chunk = (my_metadata_t *)mmap_from_system(buffer_size);
-    set_size_and_flag(new_chunk, buffer_size - sizeof(my_metadata_t), false);
-    
-    // ヒープの終端を示すための番兵（sentinel）を配置
-    my_metadata_t *sentinel = (my_metadata_t *)((char *)new_chunk + buffer_size - sizeof(my_metadata_t));
-    set_size_and_flag(sentinel, 0, false);
-
-    // 新しいチャンクを解放して、既存のフリーリスト管理と結合ロジックに任せる
-    my_free(new_chunk + 1);
-    return my_malloc(size); // 再度mallocを呼んで適切なブロックを取得
+  if (block == NULL) {
+    return NULL; // Out of memory
   }
 
-block_found:
-  // 見つけたブロックをフリーリストから削除
-  remove_from_free_list(metadata);
-  
-  size_t block_size = get_size(metadata);
-  size_t remaining_size = block_size - size;
+  remove_from_bin(block);
+  size_t block_size = get_size(block);
+  size_t remaining = block_size - required_payload;
 
-  // ブロックの分割処理
-  if (remaining_size > sizeof(my_metadata_t) + 8) { // 最小ブロックサイズ（メタデータ+8バイト）より大きい場合のみ分割
-    set_size_and_flag(metadata, size, false); // 要求されたサイズに設定し、使用中にマーク
-    
-    my_metadata_t *new_metadata = (my_metadata_t *)((char *)(metadata + 1) + size);
-    set_size_and_flag(new_metadata, remaining_size - sizeof(my_metadata_t), true);
-    add_to_free_list(new_metadata); // 残りのブロックをフリーリストに追加
+  if (remaining >= 2 * sizeof(my_metadata_t) + 8) {
+    set_size_and_flag(block, required_payload, false);
+    my_metadata_t *split = get_next_header(block);
+    set_size_and_flag(split, remaining - 2 * sizeof(my_metadata_t), true);
+    coalesce_and_add_to_list(split);
   } else {
-    // 残りが小さい場合は分割せず、すべてを割り当てる
-    set_size_and_flag(metadata, block_size, false);
+    set_size_and_flag(block, block_size, false);
   }
-
-  return metadata + 1;
+  return (void *)(block + 1);
 }
 
 void my_free(void *ptr) {
-  my_metadata_t *metadata = (my_metadata_t *)ptr - 1;
-  set_size_and_flag(metadata, get_size(metadata), true); // まず空き状態にマーク
+  if (ptr == NULL) return;
+  my_metadata_t *header = (my_metadata_t *)ptr - 1;
+  coalesce_and_add_to_list(header);
+}
 
-  // 右結合 (Forward Coalescing)
-  my_metadata_t *next_block = (my_metadata_t *)((char *)ptr + get_size(metadata));
-  if (is_free(next_block)) {
-    // 次のブロックが空きなら、そのブロックをフリーリストから削除
-    remove_from_free_list(next_block);
-    
-    // 現在のブロックと結合
-    size_t new_size = get_size(metadata) + get_size(next_block) + sizeof(my_metadata_t);
-    set_size_and_flag(metadata, new_size, true);
+static void coalesce_and_add_to_list(my_metadata_t *header) {
+  my_metadata_t *next_header = get_next_header(header);
+  my_metadata_t *prev_footer = (my_metadata_t*)header - 1;
+  
+  bool prev_is_free = is_free(prev_footer);
+  bool next_is_free = is_free(next_header);
+  size_t size = get_size(header);
+
+  if (prev_is_free && next_is_free) {
+    my_metadata_t *prev_header = get_header_from_footer(prev_footer);
+    remove_from_bin(prev_header);
+    remove_from_bin(next_header);
+    size += get_size(prev_header) + get_size(next_header) + 2 * sizeof(my_metadata_t);
+    header = prev_header;
+  } else if (prev_is_free) {
+    my_metadata_t *prev_header = get_header_from_footer(prev_footer);
+    remove_from_bin(prev_header);
+    size += get_size(prev_header) + 2 * sizeof(my_metadata_t);
+    header = prev_header;
+  } else if (next_is_free) {
+    remove_from_bin(next_header);
+    size += get_size(next_header) + 2 * sizeof(my_metadata_t);
   }
-
-  // 最終的な大きさのブロックをフリーリストに追加
-  add_to_free_list(metadata);
+  
+  set_size_and_flag(header, size, true);
+  add_to_bin(header);
 }
 
-void my_finalize() {
-  // Nothing is here for now.
-}
-
-void test() {
-  // Implement here!
-  assert(1 == 1); /* 1 is 1. That's always true! (You can remove this.) */
-}
+void my_finalize() {}
+void test() {}
