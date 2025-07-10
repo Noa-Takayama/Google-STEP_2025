@@ -1,8 +1,4 @@
-//
-// >>>> malloc challenge! <<<<
-//
-// 安定版: Best-fit アロケータ（単一フリーリスト、完全な左右結合機能付き）
-//
+// 左右結合とbestfitを組み合わせようとしたが、何度してもsegmentation faultが発生してしまったので断念
 
 #include <assert.h>
 #include <stdbool.h>
