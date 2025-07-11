@@ -101,6 +101,12 @@ void *my_malloc(size_t size) {
     return NULL;
   }
 
+  // ここが一番処理が重い
+  // なぜなら, best_fitを見つけた後に
+  // best_fitをフリーリストから削除し、必要に応じて
+  // best_fitを分割しているから
+  // ここを二分探索などにして
+  // 処理を高速化できるかもしれない
   remove_from_list(best_fit);
   size_t block_size = get_size(best_fit);
   size_t remaining = block_size - required_payload;
